@@ -1942,15 +1942,12 @@
       renderHistory();
       refreshStats();
 
-      // Pre-load the KYC phishing sample on initial open so the Safety Report looks rich immediately
-      const initialSample = SAMPLE_PRESETS.kyc;
-      const input = $id("scanInput");
-      if (input) {
-        input.value = initialSample.text;
-        updateInputTelemetry();
-        const initialRes = analyze(initialSample.text);
-        showResult(initialRes, initialSample.text, initialSample.channel);
-      }
+      // Ensure textarea starts empty on initial load
+const input = $id("scanInput");
+if (input) {
+  input.value = "";
+  updateInputTelemetry();
+}
 
       // Navigation tab buttons
       document.querySelectorAll(".nav-btn").forEach((btn) => {
