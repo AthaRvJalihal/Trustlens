@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRUSTLENS — Cyber Threat & Scam Analyzer</title>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN for responsive layout utilities -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0B1220',
+            card: '#151F30',
+            card2: '#1B273D',
+            border: '#23324B',
+            teal: '#20D6C2',
+            danger: '#F04452',
+            amber: '#F59E0B',
+            safe: '#22C55E',
+            textMain: '#F1F5F9',
+            textMuted: '#94A3B8'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* ============ TRUSTLENS — REFINED DARK CYBER THEME ============ */
+    :root {
+      --bg: #0B1220;
+      --card: #151F30;
+      --card2: #1B273D;
+      --border: #23324B;
+      --teal: #20D6C2;
+      --danger: #F04452;
+      --amber: #F59E0B;
+      --safe: #22C55E;
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334768;
+    }
+
+    /* ============ BOOT SCREEN OVERLAY ============ */
+    #bootScreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      z-index: 9999;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    #bootScreen.hidden-boot {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .boot-track {
+      width: 300px;
+      height: 6px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    #bootBar {
+      width: 0%;
+      height: 100%;
+      background: var(--teal);
+      transition: width 0.35s ease;
+    }
+
+    /* ============ CARDS & CONTAINERS ============ */
+    .tl-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .tl-card-interactive:hover {
+      border-color: rgba(32, 214, 194, 0.45);
+      transform: translateY(-2px);
+    }
+    .tl-surface {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    /* ============ NAVIGATION TABS ============ */
+    .nav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 8px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .nav-btn:hover {
+      color: var(--text);
+      background: rgba(27, 39, 61, 0.6);
+    }
+    .nav-btn.active {
+      background: rgba(32, 214, 194, 0.14);
+      color: var(--teal);
+      border-color: rgba(32, 214, 194, 0.35);
+      font-weight: 600;
+    }
+
+    /* ============ PAGE TRANSITIONS ============ */
+    .page-view {
+      display: none;
+      animation: pageFade 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .page-view.active {
+      display: block;
+    }
+    @keyframes pageFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============ SVG CIRCULAR GAUGE ============ */
+    .gauge-ring-bg {
+      fill: none;
+      stroke: #1B273D;
+      stroke-width: 11;
+    }
+    .gauge-ring-fill {
+      fill: none;
+      stroke-width: 11;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.75s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.35s ease;
+    }
+
+    /* ============ SCANNING SHIMMER ANIMATION ============ */
+    @keyframes scanPulse {
+      0% { box-shadow: 0 0 0 0 rgba(32, 214, 194, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(32, 214, 194, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(32, 214, 194, 0); }
+    }
+    .scanning-pulse {
+      animation: scanPulse 0.75s ease-out;
+    }
+
+    /* Highlighted suspicious tokens inside the Analyzed Content Preview */
+    .hl-danger {
+      background: rgba(240, 68, 82, 0.22);
+      color: #FDA4AF;
+      border-bottom: 1px dashed #F04452;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .hl-warn {
+      background: rgba(245, 158, 11, 0.22);
+      color: #FDE68A;
+      border-bottom: 1px dashed #F59E0B;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    /* Form Controls */
+    select.tl-select, input.tl-input, textarea.tl-textarea {
+      background-color: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    select.tl-select:focus, input.tl-input:focus, textarea.tl-textarea:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(32, 214, 194, 0.12);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ 1. BOOT SEQUENCE OVERLAY ============ -->
+  <div id="bootScreen" title="Click anywhere to skip">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-[#151F30] border border-[#23324B] flex items-center justify-center">
+        <svg class="w-6 h-6 text-[#20D6C2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7l7-4z"/>
+          <circle cx="12" cy="11.5" r="2.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-xl font-extrabold tracking-tight text-white">TRUST<span class="text-[#20D6C2]">LENS</span></div>
+        <div class="text-[11px] font-mono text-[#94A3B8] uppercase tracking-widest">Heuristic Threat Engine v2.4</div>
+      </div>
+    </div>
+    <div class="boot-track">
+      <div id="bootBar"></div>
+    </div>
+    <div id="bootLog" class="text-xs font-mono text-[#94A3B8]">Initializing TrustLens engine...</div>
+    <div class="text-[11px] text-[#94A3B8]/60 mt-2">Click anywhere to skip</div>
+  </div>
+
+  <!-- ============ 2. TOP NAVIGATION BAR (STICKY) ============ -->
+  <header class="sticky top-0 z-40 bg-[#151F30]/95 backdrop-blur-md border-b border-[#23324B]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchPage('analyzer')">
+        <div class="w-9 h-9 rounded-lg bg-[#1B273D] border border-[#23324B] flex items-center justify-center">
+          <svg class="w-5 h-5 text-[#20D6C2]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7l7-4z"/>
+            <circle cx="12" cy="11.5" r="2.3"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-extrabold tracking-tight text-white">TRUST<span class="text-[#20D6C2]">LENS</span></span>
+          <span class="hidden sm:inline-block text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#1B273D] text-[#94A3B8] border border-[#23324B]">v2.4</span>
+        </div>
+      </div>
+
+      <!-- 5 Navigation Tabs -->
+      <nav class="flex items-center gap-1 sm:gap-1.5 flex-wrap" aria-label="Primary Navigation">
+        <button class="nav-btn" data-page="dashboard">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-btn active" data-page="analyzer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+          <span>Message Analyzer</span>
+        </button>
+        <button class="nav-btn" data-page="intel">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          <span>Threat Intelligence</span>
+        </button>
+        <button class="nav-btn" data-page="history">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Scan History</span>
+          <span id="navHistoryCount" class="text-[11px] font-mono px-1.5 py-0.2 rounded-full bg-[#1B273D] text-[#94A3B8]">0</span>
+        </button>
+        <button class="nav-btn" data-page="about">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 16v-4m0-4h.01"/></svg>
+          <span>About &amp; Guide</span>
+        </button>
+      </nav>
+
+      <!-- System Status Badge -->
+      <div class="hidden lg:flex items-center gap-2 text-xs font-mono text-[#22C55E] bg-[#22C55E]/10 border border-[#22C55E]/30 px-3 py-1.5 rounded-full">
+        <span class="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></span>
+        <span>Engine Online · 11 Rules</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ 3. MAIN CONTENT CONTAINER ============ -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ==========================================================
+         PAGE 1: DASHBOARD (Executive Overview + Live Global Feed)
+         ========================================================== -->
+    <section id="page-dashboard" class="page-view">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-[#20D6C2]">Security Operations Center</span>
+          <h1 class="text-2xl font-bold text-white mt-0.5">Threat Posture &amp; Live Telemetry</h1>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="switchPage('analyzer')" class="px-4 py-2.5 rounded-xl bg-[#20D6C2] text-[#04121C] font-semibold text-sm hover:brightness-110 transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"/></svg>
+            Launch Message Analyzer
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Metric Strip -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="tl-card">
+          <div class="flex items-center justify-between text-xs text-[#94A3B8] mb-2">
+            <span>TOTAL SCANS ANALYZED</span>
+            <span class="font-mono text-[#20D6C2]">LOCAL DB</span>
+          </div>
+          <div class="text-3xl font-extrabold font-mono text-white" id="dashStatTotal">0</div>
+          <div class="text-xs text-[#94A3B8] mt-1">100% client-side inspection</div>
+        </div>
+
+        <div class="tl-card">
+          <div class="flex items-center justify-between text-xs text-[#94A3B8] mb-2">
+            <span>CRITICAL THREATS (P0)</span>
+            <span class="w-2 h-2 rounded-full bg-[#F04452]"></span>
+          </div>
+          <div class="text-3xl font-extrabold font-mono text-[#F04452]" id="dashStatDanger">0</div>
+          <div class="text-xs text-[#94A3B8] mt-1">Score ≥ 56 / High confidence</div>
+        </div>
+
+        <div class="tl-card">
+          <div class="flex items-center justify-between text-xs text-[#94A3B8] mb-2">
+            <span>SUSPICIOUS (P1)</span>
+            <span class="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+          </div>
+          <div class="text-3xl font-extrabold font-mono text-[#F59E0B]" id="dashStatWarn">0</div>
+          <div class="text-xs text-[#94A3B8] mt-1">Score 20–55 / Verify channel</div>
+        </div>
+
+        <div class="tl-card">
+          <div class="flex items-center justify-between text-xs text-[#94A3B8] mb-2">
+            <span>CLEAN / ROUTINE</span>
+            <span class="w-2 h-2 rounded-full bg-[#22C55E]"></span>
+          </div>
+          <div class="text-3xl font-extrabold font-mono text-[#22C55E]" id="dashStatSafe">0</div>
+          <div class="text-xs text-[#94A3B8] mt-1">Score &lt; 20 / No active lures</div>
+        </div>
+      </div>
+
+      <!-- Dashboard Middle Split: Vector Distribution + Recent Scans -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        <!-- Left 7 cols: Active Scam Vector Distribution -->
+        <div class="tl-card lg:col-span-7 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-base font-bold text-white">Top Detected Scam Vectors (India Telemetry)</h2>
+                <p class="text-xs text-[#94A3B8]">Distribution of high-severity fraud patterns monitored by TrustLens rules</p>
+              </div>
+              <span class="text-xs font-mono px-2.5 py-1 rounded-md bg-[#1B273D] text-[#20D6C2] border border-[#23324B]">Q4 ACTIVE</span>
+            </div>
+
+            <div class="space-y-4 mt-4">
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-white">1. KYC / PAN / Bank Suspension Smishing</span>
+                  <span class="font-mono text-[#F04452] font-semibold">34% · P0</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-[#1B273D] overflow-hidden">
+                  <div class="h-full rounded-full bg-[#F04452]" style="width: 82%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-white">2. "Digital Arrest" CBI / Customs Video Extortion</span>
+                  <span class="font-mono text-[#F04452] font-semibold">26% · P0</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-[#1B273D] overflow-hidden">
+                  <div class="h-full rounded-full bg-[#F04452]" style="width: 68%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-white">3. OTP / UPI Collect &amp; Refund Traps</span>
+                  <span class="font-mono text-[#F04452] font-semibold">19% · P0</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-[#1B273D] overflow-hidden">
+                  <div class="h-full rounded-full bg-[#20D6C2]" style="width: 54%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-white">4. AI Voice Clone Family Emergency Calls</span>
+                  <span class="font-mono text-[#F59E0B] font-semibold">12% · P0</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-[#1B273D] overflow-hidden">
+                  <div class="h-full rounded-full bg-[#F59E0B]" style="width: 40%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1.5">
+                  <span class="font-medium text-white">5. Prepaid Task / Electricity Cut-Off Lures</span>
+                  <span class="font-mono text-[#F59E0B] font-semibold">9% · P1</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-[#1B273D] overflow-hidden">
+                  <div class="h-full rounded-full bg-[#F59E0B]" style="width: 28%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-[#23324B] flex items-center justify-between text-xs text-[#94A3B8]">
+            <span>Need to test a suspicious SMS or WhatsApp forward right now?</span>
+            <button onclick="loadPresetAndAnalyze('kyc')" class="text-[#20D6C2] font-semibold hover:underline">Run Live Demo Scan →</button>
+          </div>
+        </div>
+
+        <!-- Right 5 cols: Recent Local Scans Snapshot -->
+        <div class="tl-card lg:col-span-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="text-base font-bold text-white">Recent Local Scans</h2>
+                <p class="text-xs text-[#94A3B8]">Latest messages evaluated in your browser</p>
+              </div>
+              <button onclick="switchPage('history')" class="text-xs text-[#20D6C2] hover:underline font-medium">View All →</button>
+            </div>
+            <div id="dashRecentHistory" class="space-y-2.5"></div>
+          </div>
+
+          <div class="mt-4 p-3 rounded-xl bg-[#1B273D] border border-[#23324B] flex items-center justify-between">
+            <div class="text-xs">
+              <span class="font-semibold text-white">National Cybercrime Helpline:</span>
+              <span class="text-[#94A3B8] ml-1">Dial <strong class="text-[#20D6C2] font-mono">1930</strong> for financial fraud</span>
+            </div>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#0B1220] text-[#94A3B8]">24×7</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Separate Section: Live Global Threat Intelligence Feed -->
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-[#20D6C2]">Live Advisory Stream</span>
+          <h2 class="text-xl font-bold text-white">Global Threat Intelligence Feed</h2>
+        </div>
+        <button onclick="switchPage('intel')" class="text-xs font-semibold text-[#20D6C2] hover:underline">Open Full Intel Library →</button>
+      </div>
+      <div id="threatFeed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- ==========================================================
+         PAGE 2: MESSAGE ANALYZER (Core Preferred Layout Workbench)
+         ========================================================== -->
+    <section id="page-analyzer" class="page-view active">
+
+      <!-- Quick KPI Strip at top of Analyzer -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="tl-card py-3.5 px-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-mono uppercase text-[#94A3B8]">Total Scans</div>
+            <div class="text-2xl font-extrabold font-mono text-[#20D6C2]" id="statScans">0</div>
+          </div>
+          <div class="w-9 h-9 rounded-lg bg-[#1B273D] flex items-center justify-center text-[#20D6C2]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+        </div>
+
+        <div class="tl-card py-3.5 px-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-mono uppercase text-[#94A3B8]">Dangerous (P0)</div>
+            <div class="text-2xl font-extrabold font-mono text-[#F04452]" id="statDanger">0</div>
+          </div>
+          <div class="w-9 h-9 rounded-lg bg-[#F04452]/10 flex items-center justify-center text-[#F04452]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+        </div>
+
+        <div class="tl-card py-3.5 px-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-mono uppercase text-[#94A3B8]">Suspicious (P1)</div>
+            <div class="text-2xl font-extrabold font-mono text-[#F59E0B]" id="statWarn">0</div>
+          </div>
+          <div class="w-9 h-9 rounded-lg bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/></svg>
+          </div>
+        </div>
+
+        <div class="tl-card py-3.5 px-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-mono uppercase text-[#94A3B8]">Verified Safe</div>
+            <div class="text-2xl font-extrabold font-mono text-[#22C55E]" id="statSafe">0</div>
+          </div>
+          <div class="w-9 h-9 rounded-lg bg-[#22C55E]/10 flex items-center justify-center text-[#22C55E]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREFERRED SPLIT WORKBENCH: LEFT (Terminal) + RIGHT (Safety Report) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+
+        <!-- LEFT COLUMN (6 cols): MESSAGE ANALYSIS TERMINAL -->
+        <div class="tl-card lg:col-span-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-[#20D6C2]"></span>
+                <h2 class="text-base font-bold text-white tracking-tight">Message Analysis Terminal</h2>
+              </div>
+              <span class="text-[11px] font-mono text-[#94A3B8]">Ctrl + Enter to scan</span>
+            </div>
+
+            <!-- Clean Dropdowns Row: Channel Context + Sample Message Preset -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3.5">
+              <div>
+                <label for="channelSelect" class="block text-[11px] font-mono uppercase text-[#94A3B8] mb-1">1. Message Vector</label>
+                <select id="channelSelect" class="tl-select w-full px-3 py-2 text-xs font-medium">
+                  <option value="Auto-Detect">All Channels (Auto-Detect)</option>
+                  <option value="SMS / Cellular">SMS / Bank Alert</option>
+                  <option value="WhatsApp / Telegram">WhatsApp / Telegram Message</option>
+                  <option value="Voice / Video Call">Voice / Video Call Transcript</option>
+                  <option value="Email / Web Link">Email / Phishing URL</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="samplePresetSelect" class="block text-[11px] font-mono uppercase text-[#94A3B8] mb-1">2. Load Sample Scenario</label>
+                <select id="samplePresetSelect" class="tl-select w-full px-3 py-2 text-xs font-medium">
+                  <option value="">Choose a sample scam to test...</option>
+                  <option value="kyc">🚨 Bank KYC Suspension + OTP Link (P0)</option>
+                  <option value="digarrest">🚨 CBI "Digital Arrest" Video Call (P0)</option>
+                  <option value="voiceclone">🚨 Family Hospital Emergency Call (P0)</option>
+                  <option value="lottery">🚨 KBC ₹25 Lakh Prize Processing Fee (P0)</option>
+                  <option value="electricity">⚠️ Electricity Cut-Off Tonight Link (P1)</option>
+                  <option value="safe">✅ Routine Amazon Delivery Update (Safe)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Larger Redesigned Textarea -->
+            <div class="relative">
+              <textarea
+                id="scanInput"
+                rows="8"
+                class="tl-textarea w-full p-4 text-sm leading-relaxed resize-y"
+                placeholder="Paste the suspicious SMS, WhatsApp forward, email body, or call transcript here...&#10;&#10;Example: 'Dear Customer, your SBI account will be suspended within 30 minutes due to expired KYC. Click http://bit.ly/sbi-kyc-verify to enter your OTP immediately.'"
+              ></textarea>
+            </div>
+
+            <!-- Live Input Telemetry Bar -->
+            <div class="flex items-center justify-between text-xs text-[#94A3B8] mt-2 px-1">
+              <div class="flex items-center gap-3 font-mono text-[11px]">
+                <span id="charCount">0 chars</span>
+                <span>·</span>
+                <span id="wordCount">0 words</span>
+              </div>
+              <div id="urlDetectPill" class="text-[11px] font-mono px-2 py-0.5 rounded bg-[#1B273D] text-[#94A3B8]">
+                0 links detected
+              </div>
+            </div>
+          </div>
+
+          <!-- Prominent Action Buttons -->
+          <div class="flex items-center gap-3 mt-5 pt-4 border-t border-[#23324B] flex-wrap">
+            <button id="scanBtn" class="flex-1 min-w-[180px] py-3 px-5 rounded-xl bg-[#20D6C2] text-[#04121C] font-bold text-sm hover:brightness-110 active:scale-[0.99] transition flex items-center justify-center gap-2 shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Analyze Message for Threats</span>
+            </button>
+            <button id="demoBtn" class="py-3 px-4 rounded-xl bg-[#1B273D] hover:bg-[#23324B] text-[#20D6C2] border border-[#23324B] font-semibold text-xs transition">
+              Random Sample
+            </button>
+            <button id="clearBtn" class="py-3 px-4 rounded-xl bg-transparent hover:bg-[#F04452]/10 text-[#94A3B8] hover:text-[#F04452] border border-[#23324B] font-semibold text-xs transition">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN (6 cols): SAFETY REPORT & RISK ASSESSMENT -->
+        <div id="safetyReportCard" class="tl-card lg:col-span-6 flex flex-col justify-between">
+          <div>
+            <!-- Report Header matching reference screenshot -->
+            <div class="flex items-center justify-between gap-2 pb-4 mb-5 border-b border-[#23324B]">
+              <div>
+                <div id="reportOverline" class="text-[11px] font-mono uppercase tracking-widest text-[#20D6C2]">ANALYSIS STANDBY</div>
+                <h2 class="text-xl font-bold text-white">Safety Report</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="copyReportBtn" class="px-3 py-1.5 rounded-lg bg-[#1B273D] hover:bg-[#23324B] border border-[#23324B] text-xs font-medium text-[#F1F5F9] transition flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-[#20D6C2]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  <span id="copyReportText">Copy Report</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Circular Progress Gauge + Risk Assessment Classification -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              <!-- Larger 148px Circular SVG Gauge -->
+              <div class="relative w-[148px] h-[148px] flex-shrink-0 flex items-center justify-center">
+                <svg class="w-full h-full" viewBox="0 0 140 140">
+                  <circle class="gauge-ring-bg" cx="70" cy="70" r="56"></circle>
+                  <circle
+                    id="gaugeCircle"
+                    class="gauge-ring-fill"
+                    cx="70"
+                    cy="70"
+                    r="56"
+                    stroke="#20D6C2"
+                    stroke-dasharray="351.86"
+                    stroke-dashoffset="351.86"
+                  ></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span id="gaugeScoreNum" class="text-4xl font-extrabold font-mono text-[#20D6C2]">0</span>
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-[#94A3B8] mt-0.5">RISK / 100</span>
+                </div>
+              </div>
+
+              <!-- Classification Badges + Explanation + Highlighted Content Preview -->
+              <div class="flex-1 min-w-0 w-full">
+                <div class="flex items-center gap-2 flex-wrap mb-2">
+                  <span id="verdictBadge" class="text-xs font-mono font-bold uppercase px-2.5 py-1 rounded-full bg-[#1B273D] text-[#20D6C2] border border-[#23324B]">
+                    READY TO SCAN
+                  </span>
+                  <span id="categoryTagsPill" class="text-xs font-medium px-2.5 py-1 rounded-full bg-[#1B273D] text-[#94A3B8] border border-[#23324B] truncate max-w-full">
+                    Awaiting Message Input
+                  </span>
+                </div>
+
+                <h3 id="verdictHeading" class="text-lg font-bold text-white">Risk Assessment</h3>
+                <p id="verdictSummary" class="text-xs text-[#94A3B8] leading-relaxed mt-1">
+                  Paste a message on the left or choose a preset sample to evaluate urgency manipulation, credential harvesting, and financial fraud patterns.
+                </p>
+
+                <!-- ANALYZED CONTENT PREVIEW BOX (with inline keyword highlights) -->
+                <div class="mt-3.5 p-3 rounded-xl bg-[#0B1220]/90 border border-[#23324B]">
+                  <div class="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#94A3B8] mb-1">
+                    <span>ANALYZED CONTENT PREVIEW</span>
+                    <span id="previewChannelTag">AUTO-DETECT</span>
+                  </div>
+                  <div id="highlightedPreview" class="text-xs text-[#94A3B8] italic leading-relaxed max-h-24 overflow-y-auto break-words">
+                    Suspicious keywords, phone triggers, and malicious links will be highlighted here after analysis.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-score Breakdown Bars (Bottom of Safety Report Card) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5 pt-4 border-t border-[#23324B]">
+            <div class="tl-surface p-3">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="text-[#94A3B8] font-medium">⚡ Manipulation &amp; Urgency</span>
+                <span id="subScoreUrgencyVal" class="font-mono font-bold text-white">0%</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-[#0B1220] overflow-hidden">
+                <div id="subScoreUrgencyBar" class="h-full rounded-full bg-[#20D6C2] transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div class="tl-surface p-3">
+              <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="text-[#94A3B8] font-medium">🔒 Credential / Financial Risk</span>
+                <span id="subScoreCredVal" class="font-mono font-bold text-white">0%</span>
+              </div>
+              <div class="w-full h-1.5 rounded-full bg-[#0B1220] overflow-hidden">
+                <div id="subScoreCredBar" class="h-full rounded-full bg-[#20D6C2] transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM SECTION (Full Width): DETECTION REASONS & RECOMMENDED ACTIONS -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left 7 Cols: Why It Was Flagged (Detection Reasons) -->
+        <div class="tl-card lg:col-span-7">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span>🚩 Detection Reasons &amp; Triggered Rules</span>
+                <span id="flagCountBadge" class="text-xs font-mono px-2 py-0.5 rounded-full bg-[#1B273D] text-[#20D6C2] border border-[#23324B]">0 matched</span>
+              </h3>
+              <p class="text-xs text-[#94A3B8] mt-0.5">Exact heuristic rules triggered and why scammers use these techniques</p>
+            </div>
+          </div>
+
+          <div id="flagsContainer" class="space-y-3">
+            <!-- Populated dynamically by showResult() -->
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: What You Should Do Next & Emergency Response -->
+        <div class="tl-card lg:col-span-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white mb-1">🛡️ What You Should Do Next</h3>
+            <p class="text-xs text-[#94A3B8] mb-4">Immediate response protocol tailored to this scan result</p>
+
+            <ul id="recommendedActionsList" class="space-y-2.5 text-xs text-[#F1F5F9] leading-relaxed">
+              <li class="flex items-start gap-2.5 p-2.5 rounded-lg bg-[#1B273D] border border-[#23324B]">
+                <span class="text-[#20D6C2] font-bold">01</span>
+                <span>Never share OTPs, UPI PINs, or CVV numbers—even if the caller claims to be from your bank or police.</span>
+              </li>
+              <li class="flex items-start gap-2.5 p-2.5 rounded-lg bg-[#1B273D] border border-[#23324B]">
+                <span class="text-[#20D6C2] font-bold">02</span>
+                <span>Do not click shortened URLs (<code class="font-mono text-[#20D6C2]">bit.ly</code>, <code class="font-mono text-[#20D6C2]">.xyz</code>). Open the official app independently.</span>
+              </li>
+              <li class="flex items-start gap-2.5 p-2.5 rounded-lg bg-[#1B273D] border border-[#23324B]">
+                <span class="text-[#20D6C2] font-bold">03</span>
+                <span>Verify emergencies by hanging up and calling the family member or institution on an official saved number.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Dynamic Emergency / Safe Harbor Callout Box -->
+          <div id="responseCalloutBox" class="mt-5 p-4 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/30 text-xs leading-relaxed">
+            <div class="font-bold text-[#22C55E] mb-1">✓ Safe Verification Protocol</div>
+            <div class="text-[#F1F5F9]">
+              Legitimate banks, couriers, and government bodies never demand immediate payment or conduct video-call arrests. If money was lost, dial <strong>1930</strong> immediately.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         PAGE 3: THREAT INTELLIGENCE (Filterable Pattern Library)
+         ========================================================== -->
+    <section id="page-intel" class="page-view">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-[#20D6C2]">Encyclopedia &amp; Signatures</span>
+          <h1 class="text-2xl font-bold text-white mt-0.5">Threat Intelligence Library</h1>
+          <p class="text-xs text-[#94A3B8] mt-1">Click "Test in Analyzer" on any threat card to inspect how TrustLens flags the pattern.</p>
+        </div>
+
+        <!-- Search & Severity Filter Pills -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <input
+            type="text"
+            id="intelSearchInput"
+            placeholder="Search threat patterns..."
+            class="tl-input px-3.5 py-2 text-xs w-48 sm:w-56"
+          />
+          <button class="intel-filter-btn px-3 py-2 rounded-lg text-xs font-semibold bg-[#20D6C2] text-[#04121C]" data-filter="ALL">All (10)</button>
+          <button class="intel-filter-btn px-3 py-2 rounded-lg text-xs font-semibold bg-[#151F30] text-[#94A3B8] border border-[#23324B]" data-filter="P0">P0 Critical</button>
+          <button class="intel-filter-btn px-3 py-2 rounded-lg text-xs font-semibold bg-[#151F30] text-[#94A3B8] border border-[#23324B]" data-filter="P1">P1 High</button>
+        </div>
+      </div>
+
+      <div id="intelList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- ==========================================================
+         PAGE 4: SCAN HISTORY (Persisted Local Log + Re-Analyze)
+         ========================================================== -->
+    <section id="page-history" class="page-view">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-[#20D6C2]">Audit Log</span>
+          <h1 class="text-2xl font-bold text-white mt-0.5">Local Scan History</h1>
+          <p class="text-xs text-[#94A3B8] mt-1">Stored privately in your browser's <code class="font-mono text-[#20D6C2]">localStorage</code>. Zero data leaves your device.</p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button id="seedHistoryBtn" class="px-3.5 py-2 rounded-xl bg-[#1B273D] hover:bg-[#23324B] border border-[#23324B] text-xs font-semibold text-[#F1F5F9] transition">
+            Restore Sample Logs
+          </button>
+          <button id="clearHistoryBtn" class="px-3.5 py-2 rounded-xl bg-transparent hover:bg-[#F04452]/15 border border-[#F04452]/50 text-xs font-semibold text-[#F04452] transition">
+            Clear All History
+          </button>
+        </div>
+      </div>
+
+      <div id="historyList" class="space-y-3"></div>
+    </section>
+
+    <!-- ==========================================================
+         PAGE 5: ABOUT & SAFETY GUIDE
+         ========================================================== -->
+    <section id="page-about" class="page-view">
+      <div class="mb-6">
+        <span class="text-xs font-mono uppercase tracking-wider text-[#20D6C2]">Architecture &amp; Citizen Defense</span>
+        <h1 class="text-2xl font-bold text-white mt-0.5">About TRUSTLENS &amp; Cyber Safety Guide</h1>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left 7 Cols: Golden Rules of Scam Defense -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="tl-card border-l-4 border-l-[#F04452]">
+            <div class="text-xs font-mono text-[#F04452] uppercase mb-1">Rule #01 · Critical Law Enforcement Fact</div>
+            <h3 class="text-base font-bold text-white mb-1.5">"Digital Arrest" Does Not Exist in Law</h3>
+            <p class="text-xs text-[#94A3B8] leading-relaxed">
+              Police, CBI, Customs, Reserve Bank, or Cybercrime officers will <strong>never</strong> interrogate you over WhatsApp/Skype video calls or ask you to transfer money to a "Reserve Bank verification account." Hang up immediately.
+            </p>
+          </div>
+
+          <div class="tl-card border-l-4 border-l-[#20D6C2]">
+            <div class="text-xs font-mono text-[#20D6C2] uppercase mb-1">Rule #02 · Credential &amp; UPI Hygiene</div>
+            <h3 class="text-base font-bold text-white mb-1.5">OTPs and UPI PINs Are Strictly for Outgoing Money</h3>
+            <p class="text-xs text-[#94A3B8] leading-relaxed">
+              You never need to enter a UPI PIN, scan a QR code, or read out an SMS OTP to <em>receive</em> a refund, cashback, or lottery payout. Anyone asking for a code to send you money is authorizing a withdrawal from your account.
+            </p>
+          </div>
+
+          <div class="tl-card border-l-4 border-l-[#F59E0B]">
+            <div class="text-xs font-mono text-[#F59E0B] uppercase mb-1">Rule #03 · Psychological Defense</div>
+            <h3 class="text-base font-bold text-white mb-1.5">Defeat Artificial Urgency with a 2-Minute Pause</h3>
+            <p class="text-xs text-[#94A3B8] leading-relaxed">
+              Threats of "electricity cut tonight at 9:30 PM", "SIM card deactivation in 2 hours", or "son arrested in accident" are designed to trigger adrenaline and bypass critical thinking. Pause, disconnect, and call the official number independently.
+            </p>
+          </div>
+
+          <div class="tl-card">
+            <div class="text-xs font-mono text-[#20D6C2] uppercase mb-1">Rule #04 · Device Integrity</div>
+            <h3 class="text-base font-bold text-white mb-1.5">Never Install APK Files or Screen-Sharing Apps for "Support"</h3>
+            <p class="text-xs text-[#94A3B8] leading-relaxed">
+              Fraudsters send <code class="font-mono text-white">Bank-KYC-Update.apk</code> on WhatsApp or ask you to install AnyDesk/RustDesk to help unblock a card. These grant full remote view of your banking SMS OTPs.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: How the 11-Rule Heuristic Engine Works + Helpline -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="tl-card">
+            <h3 class="text-base font-bold text-white mb-2">How the 11-Rule Engine Works</h3>
+            <p class="text-xs text-[#94A3B8] leading-relaxed mb-4">
+              TRUSTLENS evaluates messages locally in your browser using deterministic pattern matching across 11 weighted rules:
+            </p>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="flex justify-between p-2 rounded bg-[#1B273D]">
+                <span class="text-white">P0 Critical Rules (5 rules)</span>
+                <span class="text-[#F04452] font-bold">+28 pts each</span>
+              </div>
+              <div class="flex justify-between p-2 rounded bg-[#1B273D]">
+                <span class="text-white">P1 High-Risk Rules (5 rules)</span>
+                <span class="text-[#F59E0B] font-bold">+14 pts each</span>
+              </div>
+              <div class="flex justify-between p-2 rounded bg-[#1B273D]">
+                <span class="text-white">P2 Safe Context Rule (1 rule)</span>
+                <span class="text-[#22C55E] font-bold">0 pts (Clean)</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-[#23324B] text-xs text-[#94A3B8] space-y-1">
+              <div><strong class="text-[#F04452]">56 – 100:</strong> DANGEROUS (Red alert &amp; helpline)</div>
+              <div><strong class="text-[#F59E0B]">20 – 55:</strong> SUSPICIOUS (Amber caution)</div>
+              <div><strong class="text-[#22C55E]">0 – 19:</strong> SAFE / CLEAN (Green indicator)</div>
+            </div>
+          </div>
+
+          <div class="tl-card bg-[#F04452]/10 border-[#F04452]/40">
+            <div class="text-xs font-mono uppercase text-[#F04452] font-bold mb-1">🚨 Emergency Incident Response</div>
+            <h3 class="text-lg font-bold text-white mb-2">Already Clicked or Shared an OTP?</h3>
+            <ol class="text-xs text-[#F1F5F9] space-y-2 list-decimal list-inside leading-relaxed">
+              <li>Immediately turn on <strong>Airplane Mode</strong> if you installed an unknown app or screen-share tool.</li>
+              <li>Call the National Cybercrime Helpline at <strong class="text-[#20D6C2] font-mono text-sm">1930</strong> within the "Golden Hour" to freeze the fraudulent recipient bank transfer.</li>
+              <li>File a formal complaint at <strong class="underline">cybercrime.gov.in</strong> and lock your UPI/NetBanking via your bank's toll-free number.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ 4. VERIFICATION MODAL (Replaces native alert/confirm) ============ -->
+  <div id="verifyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="tl-card max-w-md w-full border-[#20D6C2]/40 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-3 border-b border-[#23324B]">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#20D6C2]"></span>
+          <h3 id="modalTitle" class="text-base font-bold text-white">Cross-Check &amp; Verification Protocol</h3>
+        </div>
+        <button onclick="closeModal()" class="text-[#94A3B8] hover:text-white text-lg leading-none">&times;</button>
+      </div>
+      <div id="modalBody" class="text-xs text-[#F1F5F9] space-y-2.5 leading-relaxed">
+        <p class="text-[#94A3B8]">Follow this 3-step manual verification checklist before taking any action on a suspicious message:</p>
+        <div class="p-3 rounded-lg bg-[#1B273D] border border-[#23324B]">
+          <strong class="text-[#20D6C2] block mb-0.5">1. Break the Communication Channel</strong>
+          Hang up the call or close the SMS/WhatsApp thread. Never reply to or call back a phone number embedded inside a suspicious text.
+        </div>
+        <div class="p-3 rounded-lg bg-[#1B273D] border border-[#23324B]">
+          <strong class="text-[#20D6C2] block mb-0.5">2. Independent Official Lookup</strong>
+          Open your official banking app directly or dial the customer care number printed on the back of your physical debit/credit card.
+        </div>
+        <div class="p-3 rounded-lg bg-[#1B273D] border border-[#23324B]">
+          <strong class="text-[#20D6C2] block mb-0.5">3. Check Root Domain &amp; Headers</strong>
+          Regulated Indian bank messages carry authorized TRAI headers (e.g., <code class="font-mono">AX-HDFCBK-S</code>), never personal 10-digit mobile numbers (+91 98xxxxxxxx).
+        </div>
+      </div>
+      <div id="modalFooter" class="mt-5 flex justify-end gap-2">
+        <button onclick="closeModal()" class="px-4 py-2 rounded-lg bg-[#20D6C2] text-[#04121C] font-bold text-xs">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 5. FOOTER ============ -->
+  <footer class="border-t border-[#23324B] bg-[#151F30]/60 py-4 px-6 mt-10">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[#94A3B8]">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-white">TRUST<span class="text-[#20D6C2]">LENS</span></span>
+        <span>·</span>
+        <span>Client-Side Heuristic Cyber Threat Analyzer</span>
+      </div>
+      <div class="font-mono text-[11px]">Zero Telemetry · 11 Detection Rules · Emergency Helpline: 1930</div>
+    </div>
+  </footer>
+
+  <!-- ============ 6. APPLICATION JAVASCRIPT (BOOT + ENGINE + FEED + UI) ============ -->
+  <script>
+    /* =====================================================================
+       MODULE 1: BOOT SEQUENCE (boot.js)
+       ===================================================================== */
+    (function boot() {
+      const log = document.getElementById("bootLog");
+      const bar = document.getElementById("bootBar");
+      const screen = document.getElementById("bootScreen");
+
+      if (!log || !bar || !screen) return;
+
+      const steps = [
+        "Initializing TrustLens engine...",
+        "Loading 11 heuristic detection rules...",
+        "Syncing threat intelligence signatures...",
+        "Verifying local storage audit log...",
+        "System ready ✓"
+      ];
+
+      let i = 0;
+      let dismissed = false;
+      const STEP_TIME = 340;
+
+      function dismissBoot() {
+        if (dismissed) return;
+        dismissed = true;
+        clearInterval(timer);
+        screen.classList.add("hidden-boot");
+        setTimeout(() => screen.remove(), 550);
+      }
+
+      function nextStep() {
+        log.textContent = steps[i];
+        bar.style.width = (((i + 1) / steps.length) * 100) + "%";
+        i++;
+        if (i >= steps.length) {
+          clearInterval(timer);
+          setTimeout(dismissBoot, 350);
+        }
+      }
+
+      nextStep();
+      const timer = setInterval(nextStep, STEP_TIME);
+      screen.addEventListener("click", dismissBoot, { once: true });
+    })();
+
+    /* =====================================================================
+       MODULE 2: HEURISTIC SCAM ENGINE (engine.js — 11 Rules + Highlighting)
+       ===================================================================== */
+    const $id = (id) => document.getElementById(id);
+
+    const RULES = [
+      {
+        id: "OTP",
+        pri: "P0",
+        score: 28,
+        category: "Credential Harvesting",
+        bucket: "cred",
+        rx: /(\b(otp|one[\s-]?time[\s-]?password|pin|upi\s?pin|cvv|cvc|mpin)\b[^.?!]*\b(share|send|enter|tell|confirm|read\s+out|provide|verify|input)\b)|(\b(share|send|enter|tell|confirm|read\s+out|provide|verify|input)\b[^.?!]*\b(otp|one[\s-]?time[\s-]?password|pin|upi\s?pin|cvv|cvc|mpin)\b)/i,
+        highlightRx: /\b(otp|one[\s-]?time[\s-]?password|upi\s?pin|pin|cvv|cvc|mpin)\b/gi,
+        title: "OTP / PIN Credential Request",
+        why: "No legitimate bank, courier, or government service ever asks you to share or enter an OTP/PIN to verify identity or receive funds.",
+        action: "NEVER share or enter your OTP/UPI PIN. If you already shared it, call your bank and 1930 immediately."
+      },
+      {
+        id: "DIGARREST",
+        pri: "P0",
+        score: 28,
+        category: "Law Enforcement Impersonation",
+        bucket: "urgency",
+        rx: /digital\s+arrest|cbi\s+officer|customs\s+officer|narcotics|money\s+laundering|arrest\s+warrant|supreme\s+court\s+order|skype\s+interrogation/i,
+        highlightRx: /\b(digital\s+arrest|cbi\s+officer|customs\s+officer|narcotics|money\s+laundering|arrest\s+warrant)\b/gi,
+        title: "'Digital Arrest' Extortion Threat",
+        why: "'Digital arrest' does not exist in Indian law. Scammers impersonate police/CBI on video calls to extort 'verification bail'.",
+        action: "Disconnect the video/voice call immediately. Real law enforcement never conducts arrests or bail over video calls."
+      },
+      {
+        id: "KYC",
+        pri: "P0",
+        score: 28,
+        category: "Banking Phishing",
+        bucket: "cred",
+        rx: /(kyc|pan\s?card|account|sim\s?card|net\s?banking)[^.?!]{0,45}(expir|block|suspend|updat|verif|deactivat|freeze)|(expir|block|suspend|updat|verif|freeze)[^.?!]{0,45}(kyc|pan\s?card|account)/i,
+        highlightRx: /\b(kyc|pan\s?card|suspended|blocked|deactivated|expired|update\s+kyc)\b/gi,
+        title: "KYC / Account Suspension Phishing",
+        why: "Fraudsters claim your bank account, PAN, or SIM is about to be blocked to trick you into logging into a cloned phishing portal.",
+        action: "Never click KYC links in SMS. Open your bank's official mobile app directly or visit your home branch."
+      },
+      {
+        id: "LOTTERY",
+        pri: "P0",
+        score: 28,
+        category: "Advance-Fee Fraud",
+        bucket: "cred",
+        rx: /\b(congratulations|lottery|prize|lucky\s?draw|kbc|winner|won\s+₹?\s?\d+|jackpot|processing\s+fee)\b/i,
+        highlightRx: /\b(congratulations|lottery|lucky\s?draw|kbc|winner|processing\s+fee)\b/gi,
+        title: "Lottery / Unclaimed Prize Trap",
+        why: "Scammers promise a massive prize payout but demand an upfront 'processing, GST, or release fee'—the fee itself is the theft.",
+        action: "Delete the message. Legitimate lotteries never ask winners to pay upfront fees to unlock winnings."
+      },
+      {
+        id: "EMERGENCY",
+        pri: "P0",
+        score: 28,
+        category: "Emotional Manipulation / AI Voice",
+        bucket: "urgency",
+        rx: /\b(son|daughter|brother|sister|child|family|friend|nephew|dad|mom)\b[^.?!]{0,65}\b(accident|arrest|arrested|hospital|icu|kidnap|emergency|trouble|custody|police\s+station)\b/i,
+        highlightRx: /\b(accident|arrested|hospital|icu|kidnap|emergency|police\s+station)\b/gi,
+        title: "Fake Family Emergency / AI Voice Lure",
+        why: "Exploits extreme parental or family panic (often paired with AI-cloned audio) so you transfer money before verifying.",
+        action: "Pause and call your family member directly on their saved phone number to confirm their safety."
+      },
+      {
+        id: "URGENT",
+        pri: "P1",
+        score: 14,
+        category: "Psychological Pressure",
+        bucket: "urgency",
+        rx: /\b(within|in)\s+\d+\s*(min|minute|hour|hr)s?\b|\b(immediately|urgently|last\s+chance|act\s+now|final\s+warning|tonight|instant\s+disconnection)\b/i,
+        highlightRx: /\b(within\s+\d+\s*(?:minutes?|mins?|hours?|hrs?)|immediately|urgently|final\s+warning|tonight|act\s+now)\b/gi,
+        title: "Artificial Urgency & Countdown Deadline",
+        why: "Manufactured 30-minute or 'tonight' deadlines are engineered to prevent you from consulting family or checking official sources.",
+        action: "Slow down. Utilities, banks, and tax departments issue formal notices with reasonable timelines, never 30-minute ultimatums."
+      },
+      {
+        id: "LINK",
+        pri: "P1",
+        score: 14,
+        category: "Malicious Link / APK",
+        bucket: "cred",
+        rx: /https?:\/\/|bit\.ly|tinyurl|t\.me\/|\.xyz\b|\.top\b|\.info\b|\.apk\b|ngrok\.io|click\s+(here|this|below)/i,
+        highlightRx: /(https?:\/\/[^\s]+|bit\.ly\/[^\s]+|tinyurl\.com\/[^\s]+|[a-zA-Z0-9_-]+\.(?:xyz|top|info|apk)\b)/gi,
+        title: "Suspicious Link, Shortener, or APK File",
+        why: "Shortened URLs, obscure domains (.xyz, .top), and .apk files hide credential-stealing websites or remote-access malware.",
+        action: "Do not tap the link or install any .apk file. Type the official website address manually in your browser."
+      },
+      {
+        id: "PAYMENT",
+        pri: "P1",
+        score: 14,
+        category: "Financial Demand",
+        bucket: "cred",
+        rx: /\b(pay|send|transfer|deposit|remit)\b[^.?!]{0,35}(\b(rs\.?|inr|money|fee|charge|amount|fine|penalty|bail)\b|₹)/i,
+        highlightRx: /\b(pay|transfer|deposit)\b[^.?!]{0,20}(?:₹\s?\d[\d,]*|\b(?:rs\.?|inr|fee|fine|penalty|bail)\b)/gi,
+        title: "Unsolicited Payment / Penalty Demand",
+        why: "Direct demands to transfer money, pay a fine, or clear a fee via message or call are primary indicators of financial extortion.",
+        action: "Verify any bill or fine independently on the organization's official portal—never pay via links sent in messages."
+      },
+      {
+        id: "BULK",
+        pri: "P1",
+        score: 14,
+        category: "Mass Phishing Blast",
+        bucket: "urgency",
+        rx: /\b(dear\s+customer|dear\s+user|valued\s+customer|dear\s+account\s+holder|dear\s+citizen)\b/i,
+        highlightRx: /\b(dear\s+customer|dear\s+user|valued\s+customer|dear\s+account\s+holder)\b/gi,
+        title: "Generic Mass-Blast Greeting",
+        why: "Your real bank or service provider knows your registered full name. 'Dear Customer' signals an automated bulk smishing blast.",
+        action: "Treat generic greetings paired with account warnings as mass phishing campaigns."
+      },
+      {
+        id: "SENDBANK",
+        pri: "P1",
+        score: 14,
+        category: "Mule Account Transfer",
+        bucket: "cred",
+        rx: /\b(a\/c|account|upi\s?id)[^.?!]{0,35}(credit|deposit|transfer|send)[^.?!]{0,35}\b\d{9,18}\b/i,
+        highlightRx: /\b\d{9,18}\b/g,
+        title: "Direct Mule Account Deposit Request",
+        why: "Instructing victims to transfer funds into an unverified 9–18 digit bank account number is a hallmark of mule-account laundering.",
+        action: "Never transfer funds to an account number dictated over a call or message."
+      },
+      {
+        id: "SAFE",
+        pri: "P2",
+        score: 0,
+        category: "Routine Communication",
+        bucket: "safe",
+        rx: /\b(order\s+delivered|out\s+for\s+delivery|class\s+(is\s+)?(scheduled|tomorrow)|meeting\s+(at|on)|assignment|homework|dinner|birthday|appointment\s+confirmed)\b/i,
+        highlightRx: null,
+        title: "Routine Everyday Communication",
+        why: "Contains ordinary logistics, delivery, or scheduling language with zero pressure or financial lures.",
+        action: "No action required. This message appears benign."
+      }
+    ];
+
+    function analyze(text = "") {
+      const cleanText = String(text).trim();
+      const flags = [];
+
+      for (const r of RULES) {
+        if (r.id === "SAFE") continue;
+        if (r.rx.test(cleanText)) {
+          flags.push(r);
+        }
+      }
+
+      if (flags.length === 0) {
+        const safeRule = RULES.find((r) => r.id === "SAFE");
+        if (safeRule && safeRule.rx.test(cleanText)) {
+          flags.push(safeRule);
+        }
+      }
+
+      const score = Math.min(100, flags.reduce((sum, r) => sum + r.score, 0));
+
+      let verdict = "SAFE";
+      if (score >= 56) {
+        verdict = "DANGEROUS";
+      } else if (score >= 20) {
+        verdict = "SUSPICIOUS";
+      }
+
+      // Compute sub-scores for Manipulation/Urgency vs Credential/Financial Risk
+      const urgencyScore = Math.min(
+        100,
+        flags.filter((f) => f.bucket === "urgency").reduce((s, f) => s + f.score * 2, 0)
+      );
+      const credScore = Math.min(
+        100,
+        flags.filter((f) => f.bucket === "cred").reduce((s, f) => s + f.score * 1.8, 0)
+      );
+
+      return {
+        score,
+        verdict,
+        flags,
+        urgencyScore: Math.round(urgencyScore),
+        credScore: Math.round(credScore)
+      };
+    }
+
+    /* =====================================================================
+       MODULE 3: THREAT FEED & INTEL LIBRARY DATA (feed.js)
+       ===================================================================== */
+    const SAMPLE_PRESETS = {
+      kyc: {
+        channel: "SMS / Cellular",
+        text: "Dear Customer, your SBI Bank account will be suspended tonight within 30 minutes as your PAN card KYC has expired. Click http://bit.ly/sbi-kyc-update.xyz immediately and enter your 6-digit OTP to verify your account."
+      },
+      digarrest: {
+        channel: "Voice / Video Call",
+        text: "URGENT NOTICE: This is Inspector Sharma from CBI Cyber Crime Branch. A parcel seized by Customs in your name contains illegal narcotics and money laundering documents. An arrest warrant is issued. Stay on this Skype video call under Digital Arrest and transfer Rs. 45,000 bail verification fee immediately."
+      },
+      voiceclone: {
+        channel: "Voice / Video Call",
+        text: "Papa please help! Your son was just in a terrible road accident and is in the hospital ICU. The police station officer says you must send ₹35,000 immediately to account credit 918273645512 within 15 minutes or they will arrest him!"
+      },
+      lottery: {
+        channel: "WhatsApp / Telegram",
+        text: "CONGRATULATIONS! Dear User, your mobile number has won ₹25,00,000 in the KBC Lucky Draw Winner 2026! To claim your prize money into your bank account immediately, click http://kbc-winner-claim.top and pay Rs. 4,999 processing fee now."
+      },
+      electricity: {
+        channel: "SMS / Cellular",
+        text: "Dear Consumer, your electricity power connection will be disconnected tonight at 9:30 PM because your previous month bill update failed. Act now and click http://power-bill-pay.info within 1 hour to pay your fee."
+      },
+      safe: {
+        channel: "SMS / Cellular",
+        text: "Hi Rahul, your Amazon package #402-88192 has been order delivered to your front desk reception today at 4:15 PM. Reminder: our team dinner and project meeting at 7:00 PM tomorrow is confirmed."
+      }
+    };
+
+    const FEED_ITEMS = [
+      {
+        title: "Digital Arrest Video Extortion Wave",
+        pri: "P0",
+        category: "Impersonation",
+        time: "14 mins ago",
+        desc: "Active campaign impersonating CBI, Customs, and Narcotics officers via WhatsApp/Skype video calls targeting metro citizens.",
+        meta: "🔴 Active · 200+ victims reported this week",
+        presetKey: "digarrest"
+      },
+      {
+        title: "AI Voice Clone Family Emergency",
+        pri: "P0",
+        category: "AI Audio Fraud",
+        time: "38 mins ago",
+        desc: "Criminals cloning voices from public Instagram/social reels to call parents pretending to be a child in a hospital or police emergency.",
+        meta: "🔴 Rising · 10-sec audio clip can clone a voice",
+        presetKey: "voiceclone"
+      },
+      {
+        title: "APK / Remote Screen-Share Takeover",
+        pri: "P0",
+        category: "Mobile Malware",
+        time: "1 hr ago",
+        desc: "Fake bank support convinces users to install '.apk' files or AnyDesk to 'update KYC' or redeem reward points—harvesting live SMS OTPs.",
+        meta: "🔴 Critical · Full device & banking takeover",
+        presetKey: "kyc"
+      },
+      {
+        title: "PAN / KYC Expiry Smishing Blast",
+        pri: "P1",
+        category: "Smishing",
+        time: "2 hrs ago",
+        desc: "Mass SMS campaign spoofing major bank alerts claiming 'Your account will be blocked tonight — update KYC on this shortened link.'",
+        meta: "🟠 High volume · Peak hours 8:00–11:30 AM",
+        presetKey: "kyc"
+      },
+      {
+        title: "Electricity Disconnection Tonight",
+        pri: "P1",
+        category: "Utility Scam",
+        time: "4 hrs ago",
+        desc: "Consumers receiving 'Power will be cut at 9:30 PM tonight' SMS messages with phishing links and fake helpline mobile numbers.",
+        meta: "🟠 Seasonal billing-cycle spike detected",
+        presetKey: "electricity"
+      },
+      {
+        title: "KBC / Lottery Advance Processing Fee",
+        pri: "P0",
+        category: "Advance Fee",
+        time: "6 hrs ago",
+        desc: "WhatsApp forwards claiming ₹25 Lakh lottery winnings that demand a small 'GST / processing fee' transfer before release.",
+        meta: "🔴 Persistent · Targets WhatsApp users",
+        presetKey: "lottery"
+      }
+    ];
+
+    const INTEL_ITEMS = [
+      {
+        title: "Digital Arrest Scam",
+        pri: "P0",
+        category: "Law Enforcement Spoof",
+        desc: "Scammers pose as CBI/Police/Customs on video calls and claim you are 'under digital arrest', demanding money for bail or verification. No such procedure exists in Indian law.",
+        meta: "Golden Rule: Real law enforcement never arrests via video call.",
+        presetKey: "digarrest"
+      },
+      {
+        title: "AI Voice Cloning Emergency",
+        pri: "P0",
+        category: "Synthetic Media",
+        desc: "Fraudsters clone a relative's voice from social media videos, then call crying for help (hospital/accident/custody) demanding an urgent transfer.",
+        meta: "Golden Rule: Hang up and call the person back on their saved number.",
+        presetKey: "voiceclone"
+      },
+      {
+        title: "KYC / Account Expiry Phishing",
+        pri: "P0",
+        category: "Banking Smishing",
+        desc: "SMS claiming your bank account, PAN, or SIM will be blocked within hours unless you 'update KYC' via an embedded link that steals login + OTP.",
+        meta: "Golden Rule: Open your bank's official app directly—never use SMS links.",
+        presetKey: "kyc"
+      },
+      {
+        title: "OTP / UPI Collect Request Trap",
+        pri: "P0",
+        category: "UPI Fraud",
+        desc: "A fake 'refund' or OLX buyer message asks you to enter your OTP or UPI PIN to 'receive money'. Entering a PIN always deducts money.",
+        meta: "Golden Rule: You never need an OTP or PIN to RECEIVE money.",
+        presetKey: "kyc"
+      },
+      {
+        title: "Lottery / Prize Processing Fee",
+        pri: "P0",
+        category: "Advance-Fee Lure",
+        desc: "'Congratulations! You won ₹25,00,000' — but you must pay a small processing or tax fee first. The upfront fee is the entire scam.",
+        meta: "Golden Rule: You never pay money to receive a legitimate prize.",
+        presetKey: "lottery"
+      },
+      {
+        title: "Fake Courier / Parcel Seized",
+        pri: "P1",
+        category: "IVR Social Engineering",
+        desc: "Automated call claims your FedEx/DHL parcel contains contraband and is seized by customs—press 1 to speak with 'cyber police'.",
+        meta: "Golden Rule: Track parcels only on the courier's official website.",
+        presetKey: "digarrest"
+      },
+      {
+        title: "Fake Electricity Bill Cut-Off",
+        pri: "P1",
+        category: "Utility Panic",
+        desc: "'Power will be disconnected tonight at 9:30 PM — pay immediately via this link.' Manufactured panic to force instant payment.",
+        meta: "Golden Rule: Check your bill only on the official state electricity portal.",
+        presetKey: "electricity"
+      },
+      {
+        title: "WhatsApp Stock / VIP Investment Group",
+        pri: "P1",
+        category: "Pig Butchering",
+        desc: "WhatsApp groups with fake 'institutional professors' promising 10x IPO/crypto returns on fake trading apps that block withdrawals.",
+        meta: "Golden Rule: Guaranteed high returns = 100% scam.",
+        presetKey: "lottery"
+      },
+      {
+        title: "SIM-Swap / eSIM Porting Fraud",
+        pri: "P1",
+        category: "Telecom Takeover",
+        desc: "Fraudster tricks you into forwarding an SMS or approving an eSIM upgrade, hijacking your phone number to intercept bank OTPs.",
+        meta: "Golden Rule: Sudden 'No Service'? Call your telecom provider immediately.",
+        presetKey: "kyc"
+      },
+      {
+        title: "Telegram / YouTube Task Job Scam",
+        pri: "P1",
+        category: "Job Fraud",
+        desc: "'Earn ₹3,000/day liking YouTube videos' — pays ₹150 initially to build trust, then locks larger 'prepaid tasks' behind deposits.",
+        meta: "Golden Rule: Real employers pay you; you never pay to unlock work.",
+        presetKey: "lottery"
+      }
+    ];
+
+    function renderFeedCards(containerId, items) {
+      const wrap = $id(containerId);
+      if (!wrap) return;
+
+      if (!items.length) {
+        wrap.innerHTML = `<div class="tl-card col-span-full text-center text-xs text-[#94A3B8]">No threat intelligence cards match your filter.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = items
+        .map((it) => {
+          const isP0 = it.pri === "P0";
+          const badgeStyle = isP0
+            ? "bg-[#F04452]/15 text-[#F04452] border-[#F04452]/40"
+            : "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/40";
+
+          return `
+            <div class="tl-card tl-card-interactive flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-[#1B273D] text-[#20D6C2] border border-[#23324B]">
+                    ${escapeHTML(it.category || "Threat Advisory")}
+                  </span>
+                  <span class="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${badgeStyle}">
+                    ${escapeHTML(it.pri)} ${isP0 ? "CRITICAL" : "HIGH"}
+                  </span>
+                </div>
+                <h3 class="text-sm font-bold text-white mb-1.5">${escapeHTML(it.title)}</h3>
+                <p class="text-xs text-[#94A3B8] leading-relaxed mb-4">${escapeHTML(it.desc)}</p>
+              </div>
+
+              <div class="pt-3 border-t border-[#23324B] flex items-center justify-between gap-2 text-[11px]">
+                <span class="text-[#94A3B8] font-mono truncate">${escapeHTML(it.time ? it.time + " · " : "")}${escapeHTML(it.meta)}</span>
+                <button
+                  onclick="loadPresetAndAnalyze('${it.presetKey || "kyc"}')"
+                  class="text-[#20D6C2] font-semibold hover:underline whitespace-nowrap flex-shrink-0"
+                >
+                  Test →
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    /* =====================================================================
+       MODULE 4: MAIN UI CONTROLLER (main.js)
+       ===================================================================== */
+    const HKEY = "trustlens_history_v2";
+
+    function escapeHTML(str = "") {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    // Highlight matched scam keywords inside the Analyzed Content Preview
+    function buildHighlightedPreview(rawText, flags) {
+      if (!rawText) return "";
+      let safeHTML = escapeHTML(rawText);
+
+      flags.forEach((f) => {
+        if (!f.highlightRx) return;
+        const hlClass = f.pri === "P0" ? "hl-danger" : "hl-warn";
+        safeHTML = safeHTML.replace(f.highlightRx, (match) => `<mark class="${hlClass}">${match}</mark>`);
+      });
+
+      return safeHTML;
+    }
+
+    // Page Navigation
+    function switchPage(pageId) {
+      document.querySelectorAll(".page-view").forEach((p) => p.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach((b) => {
+        if (b.dataset.page === pageId) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
+
+      const target = $id("page-" + pageId);
+      if (target) target.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Load a preset scenario and trigger immediate scan
+    function loadPresetAndAnalyze(presetKey) {
+      const preset = SAMPLE_PRESETS[presetKey];
+      if (!preset) return;
+
+      switchPage("analyzer");
+      const input = $id("scanInput");
+      const channelSelect = $id("channelSelect");
+      const presetSelect = $id("samplePresetSelect");
+
+      if (input) input.value = preset.text;
+      if (channelSelect) channelSelect.value = preset.channel;
+      if (presetSelect) presetSelect.value = presetKey;
+
+      updateInputTelemetry();
+      runScan();
+    }
+
+    // Live character, word, and link telemetry for the input terminal
+    function updateInputTelemetry() {
+      const input = $id("scanInput");
+      if (!input) return;
+      const val = input.value;
+      const chars = val.length;
+      const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+      const links = (val.match(/https?:\/\/[^\s]+|bit\.ly\/[^\s]+|tinyurl\.com\/[^\s]+|\b[a-z0-9-]+\.(?:xyz|top|info|apk)\b/gi) || []).length;
+
+      if ($id("charCount")) $id("charCount").textContent = `${chars} chars`;
+      if ($id("wordCount")) $id("wordCount").textContent = `${words} words`;
+
+      const pill = $id("urlDetectPill");
+      if (pill) {
+        pill.textContent = `${links} ${links === 1 ? "link" : "links"} detected`;
+        pill.className = links > 0
+          ? "text-[11px] font-mono px-2 py-0.5 rounded bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30"
+          : "text-[11px] font-mono px-2 py-0.5 rounded bg-[#1B273D] text-[#94A3B8]";
+      }
+    }
+
+    // Core Scan Execution
+    function runScan() {
+      const inputEl = $id("scanInput");
+      const channelEl = $id("channelSelect");
+      const reportCard = $id("safetyReportCard");
+      if (!inputEl) return;
+
+      const text = inputEl.value.trim();
+      const channel = channelEl ? channelEl.value : "Auto-Detect";
+
+      // Subtle micro-animation pulse on scan
+      if (reportCard) {
+        reportCard.classList.remove("scanning-pulse");
+        void reportCard.offsetWidth;
+        reportCard.classList.add("scanning-pulse");
+      }
+
+      if (!text) {
+        showResult({ score: 0, verdict: "EMPTY", flags: [], urgencyScore: 0, credScore: 0 }, "", channel);
+        return;
+      }
+
+      const result = analyze(text);
+      showResult(result, text, channel);
+      saveHistory(text, result, channel);
+      renderHistory();
+      refreshStats();
+    }
+
+    // Update the Safety Report card, Circular SVG Gauge, and Bottom Detection Reasons
+    function showResult(result, rawText = "", channel = "Auto-Detect") {
+      const circumference = 2 * Math.PI * 56; // r=56 => 351.86
+      const gaugeCircle = $id("gaugeCircle");
+      const gaugeScoreNum = $id("gaugeScoreNum");
+      const reportOverline = $id("reportOverline");
+      const verdictBadge = $id("verdictBadge");
+      const categoryTagsPill = $id("categoryTagsPill");
+      const verdictHeading = $id("verdictHeading");
+      const verdictSummary = $id("verdictSummary");
+      const highlightedPreview = $id("highlightedPreview");
+      const previewChannelTag = $id("previewChannelTag");
+      const flagCountBadge = $id("flagCountBadge");
+      const flagsContainer = $id("flagsContainer");
+      const recommendedActionsList = $id("recommendedActionsList");
+      const responseCalloutBox = $id("responseCalloutBox");
+
+      if (previewChannelTag) previewChannelTag.textContent = channel.toUpperCase();
+
+      // Handle Empty Input State
+      if (result.verdict === "EMPTY") {
+        if (gaugeCircle) {
+          gaugeCircle.style.strokeDashoffset = circumference;
+          gaugeCircle.setAttribute("stroke", "#20D6C2");
+        }
+        if (gaugeScoreNum) {
+          gaugeScoreNum.textContent = "0";
+          gaugeScoreNum.style.color = "#20D6C2";
+        }
+        if (reportOverline) reportOverline.textContent = "INPUT REQUIRED";
+        if (verdictBadge) {
+          verdictBadge.textContent = "EMPTY INPUT";
+          verdictBadge.className = "text-xs font-mono font-bold uppercase px-2.5 py-1 rounded-full bg-[#1B273D] text-[#94A3B8] border border-[#23324B]";
+        }
+        if (categoryTagsPill) categoryTagsPill.textContent = "Paste a message to analyze";
+        if (verdictHeading) verdictHeading.textContent = "No Message Provided";
+        if (verdictSummary) verdictSummary.textContent = "Please paste a message in the left terminal or select a sample scenario from the dropdown.";
+        if (highlightedPreview) highlightedPreview.innerHTML = "⚠️ Waiting for message content...";
+        updateSubScores(0, 0, "#20D6C2");
+        if (flagCountBadge) flagCountBadge.textContent = "0 matched";
+        if (flagsContainer) {
+          flagsContainer.innerHTML = `<div class="p-4 rounded-xl bg-[#1B273D] border border-[#23324B] text-xs text-[#94A3B8]">Paste a message above and click <strong>Analyze Message for Threats</strong> to inspect triggered heuristic rules.</div>`;
+        }
+        return;
+      }
+
+      // Color Rule: Use RED (#F04452) strictly for DANGEROUS results
+      const palette = {
+        DANGEROUS: {
+          hex: "#F04452",
+          badgeCls: "bg-[#F04452]/15 text-[#F04452] border-[#F04452]/40",
+          label: "HIGH RISK · DANGEROUS",
+          heading: "Critical Scam Indicators Detected",
+          summary: "Multiple high-severity fraud patterns matched. Do NOT click any links, share OTPs, or transfer funds."
+        },
+        SUSPICIOUS: {
+          hex: "#F59E0B",
+          badgeCls: "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/40",
+          label: "MEDIUM RISK · SUSPICIOUS",
+          heading: "Caution: Warning Signs Present",
+          summary: "Contains pressure tactics, generic greetings, or unverified links. Verify independently through an official channel before acting."
+        },
+        SAFE: {
+          hex: "#22C55E",
+          badgeCls: "bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/40",
+          label: "LOW RISK · SAFE",
+          heading: "No Active Threat Indicators Found",
+          summary: "Based on heuristic analysis of your submitted content, no known phishing, extortion, or OTP harvesting patterns were detected."
+        }
+      };
+
+      const cfg = palette[result.verdict] || palette.SAFE;
+      const offset = circumference - (result.score / 100) * circumference;
+
+      if (gaugeCircle) {
+        gaugeCircle.style.strokeDashoffset = offset;
+        gaugeCircle.setAttribute("stroke", cfg.hex);
+      }
+      if (gaugeScoreNum) {
+        gaugeScoreNum.textContent = result.score;
+        gaugeScoreNum.style.color = cfg.hex;
+      }
+      if (reportOverline) {
+        reportOverline.textContent = "ANALYSIS COMPLETE";
+        reportOverline.style.color = cfg.hex;
+      }
+      if (verdictBadge) {
+        verdictBadge.textContent = cfg.label;
+        verdictBadge.className = `text-xs font-mono font-bold uppercase px-2.5 py-1 rounded-full border ${cfg.badgeCls}`;
+      }
+
+      // Build Category Tags Pill (like "Scam / Phishing / Emotional Manipulation")
+      const categories = [...new Set(result.flags.map((f) => f.category))];
+      if (categoryTagsPill) {
+        categoryTagsPill.textContent = categories.length
+          ? categories.slice(0, 3).join(" / ")
+          : "No Threat Signatures";
+      }
+
+      if (verdictHeading) verdictHeading.textContent = cfg.heading;
+      if (verdictSummary) verdictSummary.textContent = cfg.summary;
+
+      if (highlightedPreview) {
+        highlightedPreview.classList.remove("italic");
+        highlightedPreview.innerHTML = buildHighlightedPreview(rawText, result.flags);
+      }
+
+      updateSubScores(result.urgencyScore, result.credScore, cfg.hex);
+
+      // Render Flag Cards in Bottom Left Panel
+      const threatFlags = result.flags.filter((f) => f.id !== "SAFE");
+      if (flagCountBadge) {
+        flagCountBadge.textContent = `${threatFlags.length} ${threatFlags.length === 1 ? "signal" : "signals"}`;
+      }
+
+      if (flagsContainer) {
+        if (result.flags.length === 0) {
+          flagsContainer.innerHTML = `
+            <div class="p-4 rounded-xl bg-[#1B273D] border border-[#23324B] text-xs text-[#94A3B8]">
+              ✓ Zero scam heuristics matched this message. Always remain cautious with unexpected requests.
+            </div>`;
+        } else {
+          flagsContainer.innerHTML = result.flags
+            .map((f) => {
+              const isP0 = f.pri === "P0";
+              const isP1 = f.pri === "P1";
+              const leftBorder = isP0
+                ? "border-l-4 border-l-[#F04452]"
+                : isP1
+                ? "border-l-4 border-l-[#F59E0B]"
+                : "border-l-4 border-l-[#22C55E]";
+              const badgeCls = isP0
+                ? "bg-[#F04452] text-white"
+                : isP1
+                ? "bg-[#F59E0B] text-[#0B1220]"
+                : "bg-[#22C55E] text-[#0B1220]";
+
+              return `
+                <div class="p-4 rounded-xl bg-[#1B273D] border border-[#23324B] ${leftBorder}">
+                  <div class="flex items-center justify-between gap-2 mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-bold text-white">${escapeHTML(f.title)}</span>
+                      <span class="text-[11px] font-mono text-[#94A3B8]">(${escapeHTML(f.category)})</span>
+                    </div>
+                    <span class="text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full ${badgeCls}">
+                      ${escapeHTML(f.pri)} ${f.score > 0 ? "+" + f.score : "CLEAN"}
+                    </span>
+                  </div>
+                  <div class="text-xs text-[#94A3B8] leading-relaxed mt-1">
+                    <strong class="text-[#F1F5F9]">Why it was flagged:</strong> ${escapeHTML(f.why)}
+                  </div>
+                  <div class="text-xs text-[#20D6C2] leading-relaxed mt-1.5">
+                    <strong class="text-white">What to do next:</strong> ${escapeHTML(f.action)}
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+        }
+      }
+
+      // Render Dynamic Next Steps & Callout Box in Bottom Right Panel
+      if (recommendedActionsList) {
+        const actions = result.flags.length
+          ? result.flags.map((f) => f.action)
+          : [
+              "No immediate threat detected, but never share sensitive banking PINs or OTPs.",
+              "Verify any unexpected links or attachments with the sender before opening.",
+              "Keep automatic spam filtering enabled on your SMS and email client."
+            ];
+
+        recommendedActionsList.innerHTML = actions
+          .map(
+            (act, idx) => `
+            <li class="flex items-start gap-2.5 p-2.5 rounded-lg bg-[#1B273D] border border-[#23324B]">
+              <span class="font-mono font-bold text-[#20D6C2]">0${idx + 1}</span>
+              <span>${escapeHTML(act)}</span>
+            </li>`
+          )
+          .join("");
+      }
+
+      if (responseCalloutBox) {
+        if (result.verdict === "DANGEROUS") {
+          responseCalloutBox.className = "mt-5 p-4 rounded-xl bg-[#F04452]/12 border border-[#F04452]/50 text-xs leading-relaxed";
+          responseCalloutBox.innerHTML = `
+            <div class="font-bold text-[#F04452] mb-1">🚨 EMERGENCY CYBERCRIME HELPLINE (1930)</div>
+            <div class="text-[#F1F5F9]">
+              This message matches high-confidence financial or extortion fraud. Do NOT reply or pay. If you already shared an OTP or transferred money, dial <strong>1930</strong> immediately or report at <strong>cybercrime.gov.in</strong>.
+            </div>`;
+        } else if (result.verdict === "SUSPICIOUS") {
+          responseCalloutBox.className = "mt-5 p-4 rounded-xl bg-[#F59E0B]/12 border border-[#F59E0B]/40 text-xs leading-relaxed";
+          responseCalloutBox.innerHTML = `
+            <div class="font-bold text-[#F59E0B] mb-1">⚠️ INDEPENDENT VERIFICATION ADVISED</div>
+            <div class="text-[#F1F5F9]">
+              Do not use the links or phone numbers inside this message. Contact the organization independently using their official app or website.
+            </div>`;
+        } else {
+          responseCalloutBox.className = "mt-5 p-4 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/30 text-xs leading-relaxed";
+          responseCalloutBox.innerHTML = `
+            <div class="font-bold text-[#22C55E] mb-1">✓ MESSAGE APPEARS BENIGN</div>
+            <div class="text-[#F1F5F9]">
+              No high-risk phishing or social engineering triggers were detected. Continue practicing standard digital hygiene.
+            </div>`;
+        }
+      }
+    }
+
+    function updateSubScores(urgencyPct, credPct, colorHex) {
+      const uVal = $id("subScoreUrgencyVal");
+      const uBar = $id("subScoreUrgencyBar");
+      const cVal = $id("subScoreCredVal");
+      const cBar = $id("subScoreCredBar");
+
+      if (uVal) uVal.textContent = `${urgencyPct}%`;
+      if (uBar) {
+        uBar.style.width = `${urgencyPct}%`;
+        uBar.style.backgroundColor = urgencyPct >= 50 ? "#F04452" : urgencyPct >= 25 ? "#F59E0B" : colorHex;
+      }
+      if (cVal) cVal.textContent = `${credPct}%`;
+      if (cBar) {
+        cBar.style.width = `${credPct}%`;
+        cBar.style.backgroundColor = credPct >= 50 ? "#F04452" : credPct >= 25 ? "#F59E0B" : colorHex;
+      }
+    }
+
+    /* =====================================================================
+       MODULE 5: LOCAL STORAGE HISTORY & STATS
+       ===================================================================== */
+    function seedDefaultHistoryIfEmpty() {
+      let existing = null;
+      try {
+        existing = JSON.parse(localStorage.getItem(HKEY));
+      } catch (e) {}
+
+      if (existing && Array.isArray(existing) && existing.length > 0) return;
+
+      const starterLogs = [
+        {
+          when: "Today, 10:42 AM",
+          channel: "SMS / Cellular",
+          verdict: "DANGEROUS",
+          score: 84,
+          snippet: SAMPLE_PRESETS.kyc.text.slice(0, 110),
+          fullText: SAMPLE_PRESETS.kyc.text
+        },
+        {
+          when: "Today, 09:15 AM",
+          channel: "Voice / Video Call",
+          verdict: "DANGEROUS",
+          score: 70,
+          snippet: SAMPLE_PRESETS.digarrest.text.slice(0, 110),
+          fullText: SAMPLE_PRESETS.digarrest.text
+        },
+        {
+          when: "Yesterday, 08:20 PM",
+          channel: "SMS / Cellular",
+          verdict: "SUSPICIOUS",
+          score: 42,
+          snippet: SAMPLE_PRESETS.electricity.text.slice(0, 110),
+          fullText: SAMPLE_PRESETS.electricity.text
+        },
+        {
+          when: "Yesterday, 04:18 PM",
+          channel: "SMS / Cellular",
+          verdict: "SAFE",
+          score: 0,
+          snippet: SAMPLE_PRESETS.safe.text.slice(0, 110),
+          fullText: SAMPLE_PRESETS.safe.text
+        }
+      ];
+
+      try {
+        localStorage.setItem(HKEY, JSON.stringify(starterLogs));
+      } catch (e) {}
+    }
+
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HKEY)) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHistory(text, result, channel) {
+      const h = getHistory();
+      h.unshift({
+        when: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + " · Today",
+        channel: channel || "Auto-Detect",
+        verdict: result.verdict,
+        score: result.score,
+        snippet: text.slice(0, 115),
+        fullText: text
+      });
+      try {
+        localStorage.setItem(HKEY, JSON.stringify(h.slice(0, 25)));
+      } catch (e) {}
+    }
+
+    function renderHistory() {
+      const wrap = $id("historyList");
+      const dashWrap = $id("dashRecentHistory");
+      const h = getHistory();
+
+      if ($id("navHistoryCount")) {
+        $id("navHistoryCount").textContent = h.length;
+      }
+
+      // Render compact list on Dashboard
+      if (dashWrap) {
+        if (!h.length) {
+          dashWrap.innerHTML = `<div class="text-xs text-[#94A3B8] py-4 text-center">No scans logged yet.</div>`;
+        } else {
+          dashWrap.innerHTML = h
+            .slice(0, 4)
+            .map((item, idx) => {
+              const badgeColor =
+                item.verdict === "DANGEROUS"
+                  ? "text-[#F04452] bg-[#F04452]/15 border-[#F04452]/30"
+                  : item.verdict === "SUSPICIOUS"
+                  ? "text-[#F59E0B] bg-[#F59E0B]/15 border-[#F59E0B]/30"
+                  : "text-[#22C55E] bg-[#22C55E]/15 border-[#22C55E]/30";
+              return `
+                <div class="p-3 rounded-xl bg-[#1B273D] border border-[#23324B] flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${badgeColor}">${escapeHTML(item.verdict)} · ${Number(item.score)}</span>
+                      <span class="text-[11px] font-mono text-[#94A3B8]">${escapeHTML(item.when)}</span>
+                    </div>
+                    <div class="text-xs text-[#F1F5F9] truncate mt-1">"${escapeHTML(item.snippet)}"</div>
+                  </div>
+                  <button onclick="reAnalyzeHistoryItem(${idx})" class="text-xs text-[#20D6C2] font-semibold hover:underline flex-shrink-0">Inspect</button>
+                </div>
+              `;
+            })
+            .join("");
+        }
+      }
+
+      // Render full History Page
+      if (!wrap) return;
+      if (!h.length) {
+        wrap.innerHTML = `
+          <div class="tl-card text-center py-10 text-xs text-[#94A3B8]">
+            No scan history stored. Run a scan on the Message Analyzer tab or click "Restore Sample Logs".
+          </div>`;
+        return;
+      }
+
+      wrap.innerHTML = h
+        .map((item, idx) => {
+          const badgeColor =
+            item.verdict === "DANGEROUS"
+              ? "bg-[#F04452] text-white"
+              : item.verdict === "SUSPICIOUS"
+              ? "bg-[#F59E0B] text-[#0B1220]"
+              : "bg-[#22C55E] text-[#0B1220]";
+
+          return `
+            <div class="tl-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1.5 max-w-3xl">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <span class="text-[11px] font-mono font-extrabold px-2.5 py-0.5 rounded-full ${badgeColor}">
+                    ${escapeHTML(item.verdict)} · ${Number(item.score) || 0}/100
+                  </span>
+                  <span class="text-xs font-mono px-2 py-0.5 rounded bg-[#1B273D] text-[#20D6C2] border border-[#23324B]">
+                    ${escapeHTML(item.channel || "Auto-Detect")}
+                  </span>
+                  <span class="text-xs font-mono text-[#94A3B8]">${escapeHTML(item.when)}</span>
+                </div>
+                <p class="text-xs text-[#F1F5F9] italic leading-relaxed">"${escapeHTML(item.snippet)}${item.snippet && item.snippet.length >= 110 ? "..." : ""}"</p>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button onclick="reAnalyzeHistoryItem(${idx})" class="px-3 py-1.5 rounded-lg bg-[#1B273D] hover:bg-[#23324B] border border-[#23324B] text-xs font-semibold text-[#20D6C2] transition">
+                  Re-Analyze
+                </button>
+                <button onclick="openVerifyModal()" class="px-3 py-1.5 rounded-lg bg-transparent hover:bg-[#F59E0B]/15 border border-[#F59E0B]/50 text-xs font-semibold text-[#F59E0B] transition">
+                  Cross-check &amp; Verify
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function reAnalyzeHistoryItem(index) {
+      const h = getHistory();
+      const item = h[index];
+      if (!item) return;
+
+      switchPage("analyzer");
+      const input = $id("scanInput");
+      const channelSelect = $id("channelSelect");
+      if (input) input.value = item.fullText || item.snippet;
+      if (channelSelect && item.channel) channelSelect.value = item.channel;
+
+      updateInputTelemetry();
+      const res = analyze(input.value);
+      showResult(res, input.value, item.channel || "Auto-Detect");
+    }
+
+    function refreshStats() {
+      const h = getHistory();
+      const dangerous = h.filter((x) => x.verdict === "DANGEROUS").length;
+      const suspicious = h.filter((x) => x.verdict === "SUSPICIOUS").length;
+      const safe = h.filter((x) => x.verdict === "SAFE").length;
+
+      const setTxt = (id, val) => {
+        const el = $id(id);
+        if (el) el.textContent = val;
+      };
+
+      setTxt("statScans", h.length);
+      setTxt("statDanger", dangerous);
+      setTxt("statWarn", suspicious);
+      setTxt("statSafe", safe);
+
+      setTxt("dashStatTotal", h.length);
+      setTxt("dashStatDanger", dangerous);
+      setTxt("dashStatWarn", suspicious);
+      setTxt("dashStatSafe", safe);
+    }
+
+    /* =====================================================================
+       MODULE 6: MODAL DIALOGS (No native alert/confirm)
+       ===================================================================== */
+    function openVerifyModal() {
+      const m = $id("verifyModal");
+      if (m) {
+        m.classList.remove("hidden");
+        m.classList.add("flex");
+      }
+    }
+
+    function closeModal() {
+      const m = $id("verifyModal");
+      if (m) {
+        m.classList.add("hidden");
+        m.classList.remove("flex");
+      }
+    }
+
+    /* =====================================================================
+       MODULE 7: INITIALIZATION & EVENT LISTENERS
+       ===================================================================== */
+    function initApp() {
+      seedDefaultHistoryIfEmpty();
+      renderFeedCards("threatFeed", FEED_ITEMS);
+      renderFeedCards("intelList", INTEL_ITEMS);
+      renderHistory();
+      refreshStats();
+
+      // Pre-load the KYC phishing sample on initial open so the Safety Report looks rich immediately
+      const initialSample = SAMPLE_PRESETS.kyc;
+      const input = $id("scanInput");
+      if (input) {
+        input.value = initialSample.text;
+        updateInputTelemetry();
+        const initialRes = analyze(initialSample.text);
+        showResult(initialRes, initialSample.text, initialSample.channel);
+      }
+
+      // Navigation tab buttons
+      document.querySelectorAll(".nav-btn").forEach((btn) => {
+        btn.addEventListener("click", () => switchPage(btn.dataset.page));
+      });
+
+      // Input telemetry listener
+      if (input) {
+        input.addEventListener("input", updateInputTelemetry);
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            runScan();
+          }
+        });
+      }
+
+      // Sample Preset Dropdown listener
+      const presetSelect = $id("samplePresetSelect");
+      if (presetSelect) {
+        presetSelect.addEventListener("change", (e) => {
+          if (e.target.value) {
+            loadPresetAndAnalyze(e.target.value);
+          }
+        });
+      }
+
+      // Primary Analyze button
+      const scanBtn = $id("scanBtn");
+      if (scanBtn) scanBtn.addEventListener("click", runScan);
+
+      // Random Demo Sample button
+      const demoBtn = $id("demoBtn");
+      if (demoBtn) {
+        const keys = Object.keys(SAMPLE_PRESETS);
+        let idx = 1;
+        demoBtn.addEventListener("click", () => {
+          loadPresetAndAnalyze(keys[idx % keys.length]);
+          idx++;
+        });
+      }
+
+      // Clear button
+      const clearBtn = $id("clearBtn");
+      if (clearBtn && input) {
+        clearBtn.addEventListener("click", () => {
+          input.value = "";
+          if (presetSelect) presetSelect.value = "";
+          updateInputTelemetry();
+          showResult({ score: 0, verdict: "EMPTY", flags: [], urgencyScore: 0, credScore: 0 }, "", "Auto-Detect");
+        });
+      }
+
+      // Copy Report Button (uses document.execCommand('copy') for iframe compatibility)
+      const copyBtn = $id("copyReportBtn");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+          const score = $id("gaugeScoreNum")?.textContent || "0";
+          const verdict = $id("verdictBadge")?.textContent || "UNKNOWN";
+          const summary = $id("verdictSummary")?.textContent || "";
+          const reportStr = `TRUSTLENS SAFETY REPORT\nVerdict: ${verdict}\nRisk Score: ${score}/100\nAssessment: ${summary}`;
+
+          const temp = document.createElement("textarea");
+          temp.value = reportStr;
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand("copy");
+          document.body.removeChild(temp);
+
+          const label = $id("copyReportText");
+          if (label) {
+            label.textContent = "Copied ✓";
+            setTimeout(() => {
+              label.textContent = "Copy Report";
+            }, 1800);
+          }
+        });
+      }
+
+      // Threat Intelligence Search & Filter Pills
+      let currentIntelFilter = "ALL";
+      const searchInput = $id("intelSearchInput");
+
+      function filterIntelCards() {
+        const q = (searchInput?.value || "").toLowerCase().trim();
+        const filtered = INTEL_ITEMS.filter((item) => {
+          const matchesPri = currentIntelFilter === "ALL" || item.pri === currentIntelFilter;
+          const matchesQuery =
+            !q ||
+            item.title.toLowerCase().includes(q) ||
+            item.desc.toLowerCase().includes(q) ||
+            (item.category && item.category.toLowerCase().includes(q));
+          return matchesPri && matchesQuery;
+        });
+        renderFeedCards("intelList", filtered);
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener("input", filterIntelCards);
+      }
+
+      document.querySelectorAll(".intel-filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentIntelFilter = btn.dataset.filter;
+          document.querySelectorAll(".intel-filter-btn").forEach((b) => {
+            b.className =
+              b === btn
+                ? "intel-filter-btn px-3 py-2 rounded-lg text-xs font-semibold bg-[#20D6C2] text-[#04121C]"
+                : "intel-filter-btn px-3 py-2 rounded-lg text-xs font-semibold bg-[#151F30] text-[#94A3B8] border border-[#23324B]";
+          });
+          filterIntelCards();
+        });
+      });
+
+      // History Clear & Restore buttons
+      const clearHistBtn = $id("clearHistoryBtn");
+      if (clearHistBtn) {
+        clearHistBtn.addEventListener("click", () => {
+          localStorage.removeItem(HKEY);
+          renderHistory();
+          refreshStats();
+        });
+      }
+
+      const seedHistBtn = $id("seedHistoryBtn");
+      if (seedHistBtn) {
+        seedHistBtn.addEventListener("click", () => {
+          localStorage.removeItem(HKEY);
+          seedDefaultHistoryIfEmpty();
+          renderHistory();
+          refreshStats();
+        });
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
